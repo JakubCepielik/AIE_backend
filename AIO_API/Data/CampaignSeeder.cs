@@ -1,6 +1,6 @@
 ﻿using AIO_API.Entities;
 using AIO_API.Entities.Campaigns;
-using AIO_API.Entities.Character;
+using AIO_API.Entities.Characters;
 
 namespace AIO_API.Data
 {
@@ -33,7 +33,7 @@ namespace AIO_API.Data
                     Name = "1000 Tronów",
                     Description = "Kampania seedowana",
                     CreateDate = DateTime.Now,
-                    UserId = 2
+                    UserId = 1
                 }
             };
 

@@ -1,4 +1,4 @@
-﻿using AIO_API.Entities.Character;
+﻿using AIO_API.Entities.Characters;
 using AIO_API.Entities.Users;
 
 namespace AIO_API.Entities.Campaigns

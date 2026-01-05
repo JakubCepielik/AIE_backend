@@ -13,7 +13,8 @@ namespace AIO_API.Models.Validators
                 .EmailAddress();
 
             RuleFor(x => x.Password)
-                .MinimumLength(6);
+                .MinimumLength(6)
+                .WithMessage("Pole 'Password' musi zawierać przynajmnie 6 znaków.");
 
             RuleFor(x => x.ConfirmPassword)
                 .Equal(e => e.Password)

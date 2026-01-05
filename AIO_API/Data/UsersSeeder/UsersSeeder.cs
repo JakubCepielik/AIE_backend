@@ -38,7 +38,7 @@ namespace AIO_API.Data
                 FirstName = "Admin",
                 LastName = "Systemowy",
                 Username = "admin",
-                RoleId = 6
+                RoleId = 3
             };
 
             admin.PasswordHash = _passwordHasher.HashPassword(admin, "admin");

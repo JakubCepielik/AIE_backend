@@ -1,6 +1,6 @@
 ﻿using AIO_API.Entities;
 using AIO_API.Entities.Campaigns;
-using AIO_API.Entities.Character;
+using AIO_API.Entities.Characters;
 using AIO_API.Exceptions;
 using AIO_API.Interfaces;
 using AIO_API.Models.CampaignDto;

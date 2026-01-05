@@ -1,48 +1,104 @@
-﻿using AIO_API.Models.UserDTO;
+﻿using AIO_API.Entities.Campaigns;
+using AIO_API.Entities.Characters;
+using AIO_API.Entities.Items;
 using AIO_API.Entities.Users;
-
-using AutoMapper;
-using AIO_API.Models.CharacterDto;
-using AIO_API.Entities.Character;
-using AIO_API.Models.EquipementDto;
-using AIO_API.Entities.Campaigns;
 using AIO_API.Models.CampaignDto;
+using AIO_API.Models.CharacterDto;
+using AIO_API.Models.CharacterDto.Ability;
+using AIO_API.Models.CharacterDto.Skill;
+using AIO_API.Models.CharacterDto.Statistic;
+using AIO_API.Models.EquipementDto;
+using AIO_API.Models.ItemDto;
+using AIO_API.Models.UserDTO;
+using AutoMapper;
 
-namespace AIO_API
+public class AieMappingProfile : Profile
 {
-    public class AieMappingProfile : Profile
+    public AieMappingProfile()
     {
-        public AieMappingProfile()
-        {
-            CreateMap<PlayableCharacter, PlayableCharacterDto>();
-            CreateMap<PlayableCharacter, UpdatePlayableCharacterDto>();
-            CreateMap<CreatePlayableCharacterDto, PlayableCharacter>();
-            CreateMap<UpdatePlayableCharacterDto, PlayableCharacter>();
+        // --- Character mapping ---
 
+        // Baza Character -> CharacterDto (TPH)
+        CreateMap<Character, CharacterDto>()
+            .Include<PlayableCharacter, CharacterDto>()
+            .Include<NpcCharacter, CharacterDto>()
+            .ForMember(dest => dest.CharacterType,
+                opt => opt.MapFrom(src =>
+                    src is NpcCharacter ? CharacterType.Npc : CharacterType.Playable))
+            .ForMember(dest => dest.Skills,
+                opt => opt.MapFrom(src => src.CharacterSkills))
+            .ForMember(dest => dest.Abilities,
+                opt => opt.MapFrom(src => src.CharacterAbilities))
+            .ForMember(dest => dest.Inventory,
+                opt => opt.MapFrom(src => src.CharacterItems))
+            .ForMember(dest => dest.Statistics,
+                opt => opt.MapFrom(src => src.Statistics));
 
-            // User maping
-            CreateMap<User, UserDto>();
-                //.ForMember(u => u.Id, c => c.MapFrom(u => u.Id))
-                //.ForMember(u => u.UserName, c => c.MapFrom(u => u.Username))
-                //.ForMember(u => u.RoleId, c => c.MapFrom(u => u.Role));
+        // Specyficzne mapowania dziedziczące
+        CreateMap<PlayableCharacter, CharacterDto>();
+        CreateMap<NpcCharacter, CharacterDto>();
 
-            CreateMap<CreateCharacterItemDto, CharacterItem>();
+        // Tworzenie postaci
+        CreateMap<CreateCharacterDto, PlayableCharacter>()
+            .ForMember(dest => dest.id, opt => opt.Ignore())
+            .ForMember(dest => dest.UserId, opt => opt.Ignore())
+            .ForMember(dest => dest.Statistics, opt => opt.Ignore());
 
-            CreateMap<CharacterItem, CharacterItemDto>()
-                .ForMember(dto => dto.CharacterId, m => m.MapFrom(ci => ci.CharacterId))
-                .ForMember(dto => dto.ItemId, m => m.MapFrom(ci => ci.ItemId))
-                .ForMember(dto => dto.Count, m => m.MapFrom(ci => ci.Count))
-                .ForMember(dto => dto.Name, m => m.MapFrom(ci => ci.Item.Name))
-                .ForMember(dto => dto.Description, m => m.MapFrom(ci => ci.Item.Description))
-                .ForMember(dto => dto.Type, m => m.MapFrom(ci => ci.Item.Type))
-                .ForMember(dto => dto.Price, m => m.MapFrom(ci => ci.Item.Price))
-                .ForMember(dto => dto.Weight, m => m.MapFrom(ci => ci.Item.Weight));
+        CreateMap<CreateCharacterDto, NpcCharacter>()
+            .ForMember(dest => dest.id, opt => opt.Ignore())
+            .ForMember(dest => dest.UserId, opt => opt.Ignore())
+            .ForMember(dest => dest.Statistics, opt => opt.Ignore());
 
+        // --- Inventory / Items ---
+        CreateMap<CharacterItem, InventoryDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Item.Id))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Item.Name))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Item.Description))
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Item.Type))
+            .ForMember(dest => dest.Weight, opt => opt.MapFrom(src => src.Item.Weight));
 
-            CreateMap<Campaign, CampaignDto>();
-            CreateMap<Campaign, CampaignByIdDto>();
-            CreateMap<CreateCampaignDto, Campaign>();
+        CreateMap<CreateCharacterItemDto, CharacterItem>();
+        CreateMap<CharacterItem, CharacterItemDto>()
+            .ForMember(dest => dest.CharacterId, opt => opt.MapFrom(src => src.CharacterId))
+            .ForMember(dest => dest.ItemId, opt => opt.MapFrom(src => src.ItemId))
+            .ForMember(dest => dest.Count, opt => opt.MapFrom(src => src.Count))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Item.Name))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Item.Description))
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Item.Type))
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Item.Price))
+            .ForMember(dest => dest.Weight, opt => opt.MapFrom(src => src.Item.Weight));
 
-        }
+        // --- Skills ---
+        CreateMap<AddSkillDto, CharacterSkill>();
+        CreateMap<Skill, SkillDto>();
+        CreateMap<CharacterSkill, SkillDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Skill.Id))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Skill.Name))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Skill.Description))
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Skill.Type));
+
+        // --- Abilities ---
+        CreateMap<AddAbilityDto, CharacterAbility>();
+        CreateMap<Ability, AbilityDto>();
+        CreateMap<CharacterAbility, AbilityDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Ability.Id))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Ability.Name))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Ability.Description));
+
+        // --- Items ---
+        CreateMap<Item, ItemDto>();
+
+        // --- Statistics ---
+        CreateMap<Statistic, StatisticDto>();
+        CreateMap<CreateCharacterStatisticDto, Statistic>();
+        CreateMap<UpdateStatisticDto, Statistic>();
+
+        // --- Users ---
+        CreateMap<User, UserDto>();
+
+        // --- Campaigns ---
+        CreateMap<Campaign, CampaignDto>();
+        CreateMap<Campaign, CampaignByIdDto>();
+        CreateMap<CreateCampaignDto, Campaign>();
     }
 }

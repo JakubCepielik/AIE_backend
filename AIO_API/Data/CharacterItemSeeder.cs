@@ -1,5 +1,5 @@
 ﻿using AIO_API.Entities;
-using AIO_API.Entities.Character;
+using AIO_API.Entities.Characters;
 
 namespace AIO_API.Data
 {
@@ -28,13 +28,13 @@ namespace AIO_API.Data
             {
                 new CharacterItem()
                 {
-                    CharacterId = 1,
+                    CharacterId = 6,
                     ItemId = 1,
                     Count = 2
                 },
                 new CharacterItem()
                 {
-                    CharacterId = 2,
+                    CharacterId = 7,
                     ItemId = 2,
                     Count = 1
                 }

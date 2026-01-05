@@ -1,8 +1,10 @@
 ﻿using AIO_API.Data;
-using AIO_API.Entities.Character;
+using AIO_API.Entities.Characters;
 using AIO_API.Interfaces;
 using AIO_API.Models.CharacterDto;
-using AIO_API.Models.UserDTO;
+using AIO_API.Models.CharacterDto.Ability;
+using AIO_API.Models.CharacterDto.Skill;
+using AIO_API.Models.CharacterDto.Statistic;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +14,7 @@ namespace AIO_API.Controllers
 {
     [Route("api/character")]
     [ApiController]
+    [Authorize]
     public class CharacterController : ControllerBase
     {
         private ICharacterService _characterService;
@@ -22,7 +25,7 @@ namespace AIO_API.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult Update([FromRoute]int id, [FromBody] UpdatePlayableCharacterDto dto)
+        public ActionResult Update([FromRoute]int id, [FromBody] UpdateCharacterDto dto)
         {
             _characterService.Update(id, UserId, dto);
             return Ok();
@@ -38,26 +41,83 @@ namespace AIO_API.Controllers
         }
 
         [HttpPost]
-        public ActionResult<PlayableCharacter> CreatePlayableCharacter([FromBody] CreatePlayableCharacterDto dto)
+        public ActionResult<Character> Create([FromBody] CreateCharacterDto dto)
         {
-            var playableCharacter = _characterService.Create(UserId,dto);
-            return Ok(playableCharacter);
+            var characterId = _characterService.Create(UserId, dto);
+            return Created($"api/character/{characterId}", null);
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<PlayableCharacterDto>> GetAll()
+        public ActionResult<IEnumerable<CharacterDto>> GetAll()
         {
-            var playableCharactersDto = _characterService.GetAll(UserId);
-            return Ok(playableCharactersDto);
+            var CharactersDto = _characterService.GetAll(UserId);
+            return Ok(CharactersDto);
         }
 
 
 
        [HttpGet("{id}")]
-        public ActionResult<PlayableCharacter> Get([FromRoute] int id)
+        public ActionResult<CharacterDto> Get([FromRoute] int id)
         {
-            var playableCharacterByIdDto = _characterService.GetById(id);
-            return Ok(playableCharacterByIdDto);
+            var CharacterByIdDto = _characterService.GetById(id);
+            return Ok(CharacterByIdDto);
         }
+
+        /// Skills Management
+
+        [HttpPost("{id}/skills")]
+        public ActionResult AddSkill(int id, [FromBody] AddCharacterSkillDto dto)
+        {
+            _characterService.AddSkill(id, dto);
+            return Ok();
+        }
+
+        [HttpGet("skills")]
+        public ActionResult<IEnumerable<SkillDto>> GetSkills()
+        {
+            var skills = _characterService.GetSkills();
+            return Ok(skills);
+        }
+
+        [HttpDelete("{id}/skills")]
+        public ActionResult DeleteSkill(int id, [FromBody] DeleteCharacterSkillDto dto)
+        {
+            _characterService.DeleteSkill(id, dto);
+            return Ok();
+        }
+
+        /// Abilities Management
+        
+        [HttpPost("{id}/abilities")]
+        public ActionResult AddAbility(int id, [FromBody] AddCharacterAbilityDto dto)
+        {
+            _characterService.AddAbility(id, dto);
+            return Ok();
+        }
+
+        [HttpGet("abilities")]
+        public ActionResult<IEnumerable<SkillDto>> GetAbilities()
+        {
+            var abilities = _characterService.GetAbilities();
+            return Ok(abilities);
+        }
+
+        [HttpDelete("{id}/abilities")]
+        public ActionResult DeleteAbility(int id, [FromBody] DeleteCharacterAbilityDto dto)
+        {
+            _characterService.DeleteAbility(id, dto);
+            return Ok();
+        }
+
+        /// Statistics Management
+
+        [HttpPost("{id}/statistics")]
+        public ActionResult UpdateStatistic(int id, [FromBody] UpdateStatisticDto dto)
+        {
+            _characterService.UpdateStatistic(id, UserId, dto);
+            return Ok();
+        }
+
+
     }
 }

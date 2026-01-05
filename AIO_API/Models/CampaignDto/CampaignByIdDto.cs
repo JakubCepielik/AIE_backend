@@ -9,6 +9,6 @@ namespace AIO_API.Models.CampaignDto
         public string Description { get; set; }
         public DateTime CreateDate { get; set; }
 
-        public List<PlayableCharacterDto> PlayableCharacters { get; set; }
+        public List<AllCharacterDto> Characters { get; set; }
     }
 }

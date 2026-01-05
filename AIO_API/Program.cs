@@ -1,5 +1,3 @@
-using System.Reflection;
-using System.Text;
 using AIO_API;
 using AIO_API.Data;
 using AIO_API.Entities;
@@ -9,7 +7,6 @@ using AIO_API.Middleware;
 using AIO_API.Models.UserDTO;
 using AIO_API.Models.Validators;
 using AIO_API.Services;
-
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -17,8 +14,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
 using NLog.Web;
+using System.Reflection;
+using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +28,13 @@ builder.Host.UseNLog();
 
 // ---------- SERVICES ----------
 builder.Services.AddControllers().AddFluentValidation();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
 builder.Services.AddDbContext<AieDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -73,6 +79,10 @@ builder.Services.AddTransient<PlayableCharacterSeeder>();
 builder.Services.AddTransient<ItemSeeder>();
 builder.Services.AddTransient<CharacterItemSeeder>();
 builder.Services.AddTransient<CampaignSeeder>();
+builder.Services.AddTransient<SkillSeeder>();
+builder.Services.AddTransient<AbilitySeeder>();
+builder.Services.AddTransient<StatisticSeeder>();
+
 // ---------- MIDDLEWARE ----------
 builder.Services.AddScoped<ErrorHandlingMiddleware>();
 builder.Services.AddScoped<RequestTimeMiddleware>();
@@ -82,10 +92,12 @@ builder.Services.AddTransient<ICharacterService, CharacterService>();
 builder.Services.AddTransient<ICharacterItemService, CharacterItemService>();
 builder.Services.AddTransient<ICampaignService, CampaignService>();
 builder.Services.AddScoped<ICharacterItemService, CharacterItemService>();
+builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
 builder.Services.AddScoped<IValidator<ChangePasswordDto>, ChangePasswordDtoValidator>();
+//builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
 
 // ---------- SWAGGER ----------
 builder.Services.AddEndpointsApiExplorer();
@@ -120,6 +132,15 @@ using (var scope = app.Services.CreateScope())
 
     var characterItemSeeder = scope.ServiceProvider.GetRequiredService<CharacterItemSeeder>();
     characterItemSeeder.Seed();
+
+    var SkillSeeder = scope.ServiceProvider.GetRequiredService<SkillSeeder>();
+    SkillSeeder.Seed();
+
+    var AbilitySeeder = scope.ServiceProvider.GetRequiredService<AbilitySeeder>();
+    AbilitySeeder.Seed();
+
+    var StatisticSeeder = scope.ServiceProvider.GetRequiredService<StatisticSeeder>();
+    StatisticSeeder.Seed();
 }
 
 // ---------- MIDDLEWARE PIPELINE ----------

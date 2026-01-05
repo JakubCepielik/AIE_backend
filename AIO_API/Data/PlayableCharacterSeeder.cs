@@ -1,5 +1,5 @@
 using AIO_API.Entities;
-using AIO_API.Entities.Character;
+using AIO_API.Entities.Characters;
 
 
 namespace AIO_API.Data
@@ -34,8 +34,8 @@ namespace AIO_API.Data
                     Race = "Człowiek",
                     Career = "Wojownik",
                     Age = 25,
-                    CampaignId = 1,
-                    UserId = 2
+                    CampaignId = 3,
+                    UserId = 1
                 },
                 new PlayableCharacter()
                 {
@@ -43,8 +43,8 @@ namespace AIO_API.Data
                     Race = "Elf",
                     Career = "Rzecznik Rodu",
                     Age = 150,
-                    CampaignId = 1,
-                    UserId = 2
+                    CampaignId = 3,
+                    UserId = 1
                 }
             };
 

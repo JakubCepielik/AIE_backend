@@ -10,6 +10,7 @@ namespace AIO_API.Controllers
 {
     [Route("api/campaign")]
     [ApiController]
+    [Authorize]
     public class CampaignController : ControllerBase
     {
         private ICampaignService _campaignService;
@@ -22,7 +23,6 @@ namespace AIO_API.Controllers
 
 
         [HttpGet("{id}")]
-        [Authorize]
         public ActionResult<Campaign> Get([FromRoute] int id)
         {
             var campaignById = _campaignService.GetById(id, UserId);
@@ -30,7 +30,6 @@ namespace AIO_API.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public ActionResult<IEnumerable<Campaign>> GetAll()
         {
             var allCampaign = _campaignService.GetAll(UserId);
@@ -38,7 +37,6 @@ namespace AIO_API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
         public ActionResult UpdateCampaign([FromRoute] int id, [FromBody] UpdateCampaignDto dto)
         {
 
@@ -48,7 +46,6 @@ namespace AIO_API.Controllers
 
 
         [HttpPost]
-        [Authorize]
         public ActionResult<Campaign> CreateCampaign([FromBody] CreateCampaignDto dto)
         {
 
@@ -57,7 +54,6 @@ namespace AIO_API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
         public ActionResult DeleteCampaign([FromRoute] int id)
         {
 
