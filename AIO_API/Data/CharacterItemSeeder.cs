@@ -24,17 +24,23 @@ namespace AIO_API.Data
 
         private IEnumerable<CharacterItem> GetCharacterItems()
         {
+            var aldred = _dbContext.Characters
+                            .First(u => u.Name == "Aldred");
+            var meliret = _dbContext.Characters
+                            .First(u => u.Name == "Meliret");
+            
             var characterItems = new List<CharacterItem>()
             {
+                    
                 new CharacterItem()
                 {
-                    CharacterId = 6,
+                    CharacterId = aldred.id,
                     ItemId = 1,
                     Count = 2
                 },
                 new CharacterItem()
                 {
-                    CharacterId = 7,
+                    CharacterId = meliret.id,
                     ItemId = 2,
                     Count = 1
                 }

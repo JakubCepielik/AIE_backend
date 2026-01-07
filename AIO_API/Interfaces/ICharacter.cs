@@ -1,4 +1,6 @@
-﻿namespace AIO_API.Interfaces
+﻿using AIO_API.Entities.Characters.Skills;
+
+namespace AIO_API.Interfaces
 {
     public interface ICharacter
     {
@@ -7,25 +9,11 @@
         string Career { get; }
         short Age { get; }
 
-        //int WeaponSkill { get; }
-        //int BallisticSkill { get; }
-        //int Strength { get; }
-        //int Toughness { get; }
-        //int Agility { get; }
-        //int Intelligence { get; }
-        //int WillPower { get; }
-        //int Fellowship { get; }
+        public void AssignToUser(int userId);
+        public void AddSkill(int skillId);
+        public void DeleteSkill(int skillId);
+        public void AddAbility(int skillId);
 
-        //int Attacks { get; }
-        //int Wounds { get; }
-        //int Movement { get; }
-        //int Magic { get; }
-        //int InsanityPoints { get; }
-        //int FatePoints { get; }
-
-        //List<string> Skills { get; }
-        //List<string> Talents { get; }
-        //List<string> Inventory { get; }
     }
 
 }

@@ -26,6 +26,11 @@ namespace AIO_API.Data
 
         private IEnumerable<PlayableCharacter> GetPlayableCharacters() 
         {
+            var campaign = _dbContext.Campaigns
+                .First(c => c.Name == "1000 Tronów");
+            var admin = _dbContext.Users
+                .First(u => u.Username == "admin");
+
             var characters = new List<PlayableCharacter>()
             {
                 new PlayableCharacter()
@@ -34,8 +39,8 @@ namespace AIO_API.Data
                     Race = "Człowiek",
                     Career = "Wojownik",
                     Age = 25,
-                    CampaignId = 3,
-                    UserId = 1
+                    CampaignId = campaign.Id,
+                    UserId = admin.Id
                 },
                 new PlayableCharacter()
                 {
@@ -43,8 +48,8 @@ namespace AIO_API.Data
                     Race = "Elf",
                     Career = "Rzecznik Rodu",
                     Age = 150,
-                    CampaignId = 3,
-                    UserId = 1
+                    CampaignId = campaign.Id,
+                    UserId = admin.Id
                 }
             };
 

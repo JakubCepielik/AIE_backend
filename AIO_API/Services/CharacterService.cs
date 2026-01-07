@@ -1,5 +1,9 @@
 ﻿using AIO_API.Entities;
 using AIO_API.Entities.Characters;
+using AIO_API.Entities.Characters.Abilities;
+using AIO_API.Entities.Characters.Skills;
+using AIO_API.Entities.Characters.Statistics;
+using AIO_API.Entities.Users;
 using AIO_API.Exceptions;
 using AIO_API.Interfaces;
 using AIO_API.Models.CharacterDto;
@@ -7,7 +11,6 @@ using AIO_API.Models.CharacterDto.Ability;
 using AIO_API.Models.CharacterDto.Skill;
 using AIO_API.Models.CharacterDto.Statistic;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AIO_API.Services
@@ -18,145 +21,93 @@ namespace AIO_API.Services
         private readonly AieDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<CharacterService> _logger;
+        private readonly ICharacterRepository _repo;
 
-        public CharacterService(AieDbContext dbContext, IMapper mapper, ILogger<CharacterService> logger)
+        public CharacterService(AieDbContext dbContext,
+            IMapper mapper, ILogger<CharacterService> logger, ICharacterRepository repo)
         {
             _dbContext = dbContext;
             _mapper = mapper;
             _logger = logger;
+            _repo = repo;
         }
 
         public void Update(int id, int userId, UpdateCharacterDto dto)
         {
-            var CharacterById = _dbContext
-                            .Characters
-                            .Where(pc => pc.UserId == userId)
-                            .FirstOrDefault(p => p.id == id);
+            var CharacterById = _repo.GetById(id, userId);
 
             if (CharacterById == null)
                 throw new NotFoundException("Character not found");
 
-            _dbContext.Entry(CharacterById).CurrentValues.SetValues(dto);
-            _dbContext.SaveChanges();
+            _repo.Update(CharacterById, dto);
+            _repo.SaveChanges();
         }
 
-        public void Delete(int id)
+        public void Delete(int id, int userId)
         {
             _logger.LogError($"Character with id: {id} DELETE action invoked");
 
-            var playableCharacterById = _dbContext
-                            .PlayableCharacter
-                            .FirstOrDefault(p => p.id == id);
-            if (playableCharacterById == null)
-                throw new NotFoundException("Character not found");
-
-            _dbContext.Remove(playableCharacterById);
-            _dbContext.SaveChanges();
-        }
-
-        public CharacterDto GetById(int id)
-        {
-            var CharacterById = _dbContext
-                            .Characters
-                            .Include(c => c.CharacterSkills)
-                            .ThenInclude(cs => cs.Skill)
-                            .Include(c => c.CharacterAbilities)
-                            .ThenInclude(cs => cs.Ability)
-                            .Include(i => i.CharacterItems)
-                            .ThenInclude(ci => ci.Item)
-                            .Include(s => s.Statistics)
-                            .FirstOrDefault(p => p.id == id);
+            var CharacterById = _repo.GetById(id, userId);
 
             if (CharacterById == null)
-            {
                 throw new NotFoundException("Character not found");
-            }
 
-            var result = _mapper.Map<CharacterDto>(CharacterById);
+            _repo.Remove(CharacterById);
+            _repo.SaveChanges();
+        }
 
-            return result;
+        public CharacterDto GetById(int id, int userId)
+        {
+            var CharacterById = _repo.GetById(id, userId);
+
+            if (CharacterById == null)
+                throw new NotFoundException("Character not found");
+
+            return _mapper.Map<CharacterDto>(CharacterById);
         }
 
         public IEnumerable<CharacterDto> GetAll(int userId)
         {
-            var Characters = _dbContext.
-                                   Characters.
-                                   Where(pc => pc.UserId == userId).
-                                   ToList();
-
-            var CharactersDto = _mapper.Map<List<CharacterDto>>(Characters);
-
-            return CharactersDto;
+            var Characters = _repo.GetAllForUser(userId);
+            return _mapper.Map<List<CharacterDto>>(Characters);
         }
 
         public int Create(int userId, CreateCharacterDto dto)
         {
-            Character character;
-            ValidateStatistics(dto.Statistics);
-
-            switch (dto.CharacterType)
+            Character character = dto.CharacterType switch
             {
-                case CharacterType.Playable:
-                    var playableDto = dto;
-                    if (playableDto == null)
-                        throw new BadRequestException("Invalid PlayableCharacter data");
+                CharacterType.Playable => _mapper.Map<PlayableCharacter>(dto).ApplyUser(userId),
+                CharacterType.Npc => _mapper.Map<NpcCharacter>(dto).ApplyUser(userId),
+                _ => throw new BadRequestException("Unknown character type")
+            };
 
-                    var playable = _mapper.Map<PlayableCharacter>(playableDto);
-                    playable.UserId = userId;
-                    character = playable;
-                    break;
+            character.ValidateStatistics(dto.Statistics);
 
-                case CharacterType.Npc:
-                    var npcDto = dto;
-                    if (npcDto == null)
-                        throw new BadRequestException("Invalid NpcCharacter data");
-
-                    var npc = _mapper.Map<NpcCharacter>(npcDto);
-                    npc.UserId = userId;
-                    character = npc;
-                    break;
-
-                default:
-                    throw new BadRequestException("Unknown character type");
+            foreach (var statDto in dto.Statistics)
+            {
+                var stat = _mapper.Map<Statistic>(statDto);
+                stat.CharacterId = character.id;
+                character.Statistics.Add(stat);
             }
 
-            _dbContext.Characters.Add(character);
-            _dbContext.SaveChanges();
-
-            var statistics = dto.Statistics
-               .Select(s =>
-               {
-                   var stat = _mapper.Map<Statistic>(s);
-                   stat.CharacterId = character.id;
-                   return stat;
-               })
-               .ToList();
-
-            _dbContext.Statistics.AddRange(statistics);
-            _dbContext.SaveChanges();
+            _repo.Add(character);
+            _repo.SaveChanges();
 
             return character.id;
         }
 
-        public void AddSkill(int id, AddCharacterSkillDto dto)
+        public void AddSkill(int id, int userId, AddCharacterSkillDto dto)
         {
-            var character = _dbContext.Characters
-                .Include(c => c.CharacterSkills)
-                .FirstOrDefault(c => c.id == id);
+            var character = _repo.GetById(id, userId);
+
             if (character == null)
                 throw new NotFoundException("Character not found");
+
             foreach (var skillDto in dto.Skills)
             {
-                var skill = _dbContext.Skills.FirstOrDefault(s => s.Id == skillDto.SkillId);
-                if (skill == null)
-                    throw new NotFoundException("Skill not found");
-                if (character.CharacterSkills.Any(s => s.SkillId == skillDto.SkillId))
-                    throw new BadRequestException("Character already has this skill");
-                skillDto.CharacterId = id;
-                var addSkillDto = _mapper.Map<CharacterSkill>(skillDto);
-                character.CharacterSkills.Add(addSkillDto);
-                _dbContext.SaveChanges();
+                character.AddSkill(skillDto.SkillId);
             }
+            _repo.SaveChanges();
         }
 
         public IEnumerable<SkillDto> GetSkills()
@@ -170,43 +121,31 @@ namespace AIO_API.Services
             return skillsDto;
         }
 
-        public void DeleteSkill(int id, DeleteCharacterSkillDto dto)
+        public void DeleteSkill(int id, int userId, DeleteCharacterSkillDto dto)
         {
-            var character = _dbContext.Characters
-                .Include(c => c.CharacterSkills)
-                .FirstOrDefault(c => c.id == id);
+
+            var character = _repo.GetById(id, userId);
             if (character == null)
                 throw new NotFoundException("Character not found");
+
             foreach (var skillDto in dto.Skills)
             {
-                var characterSkill = character.CharacterSkills
-                    .FirstOrDefault(s => s.SkillId == skillDto.SkillId);
-                if (characterSkill == null)
-                    throw new NotFoundException("Character does not have this skill");
-                _dbContext.Remove(characterSkill);
-                _dbContext.SaveChanges();
+                character.DeleteSkill(skillDto.SkillId);
             }
+            _repo.SaveChanges();
         }
 
-        public void AddAbility(int id, AddCharacterAbilityDto dto)
+        public void AddAbility(int id,int userId, AddCharacterAbilityDto dto)
         {
-            var character = _dbContext.Characters
-               .Include(c => c.CharacterAbilities)
-               .FirstOrDefault(c => c.id == id);
+            var character = _repo.GetById(id, userId);
             if (character == null)
                 throw new NotFoundException("Character not found");
+
             foreach (var abilityDto in dto.Abilities)
             {
-                var ability = _dbContext.Abilities.FirstOrDefault(s => s.Id == abilityDto.AbilityId);
-                if (ability == null)
-                    throw new NotFoundException("Ability not found");
-                if (character.CharacterAbilities.Any(s => s.AbilityId == abilityDto.AbilityId))
-                    throw new BadRequestException("Character already has this ability");
-                abilityDto.CharacterId = id;
-                var addAbilityDto = _mapper.Map<CharacterAbility>(abilityDto);
-                character.CharacterAbilities.Add(addAbilityDto);
-                _dbContext.SaveChanges();
+                character.AddAbility(abilityDto.AbilityId);
             }
+            _repo.SaveChanges();
         }
 
         public IEnumerable<AbilityDto> GetAbilities()
@@ -219,29 +158,22 @@ namespace AIO_API.Services
 
             return abilitiesDto;
         }
-        public void DeleteAbility(int id, DeleteCharacterAbilityDto dto)
+        public void DeleteAbility(int id, int userId, DeleteCharacterAbilityDto dto)
         {
-            var character = _dbContext.Characters
-               .Include(c => c.CharacterAbilities)
-               .FirstOrDefault(c => c.id == id);
+            var character = _repo.GetById(id, userId);
             if (character == null)
                 throw new NotFoundException("Character not found");
+
             foreach (var abilityDto in dto.Abilities)
             {
-                var characterAbility = character.CharacterAbilities
-                    .FirstOrDefault(s => s.AbilityId == abilityDto.AbilityId);
-                if (characterAbility == null)
-                    throw new NotFoundException("Character does not have this ability");
-                _dbContext.Remove(characterAbility);
-                _dbContext.SaveChanges();
+                character.DeleteAbility(abilityDto.AbilityId);
             }
+            _repo.SaveChanges();
         }
 
         public void UpdateStatistic(int id, int userId, UpdateStatisticDto dto)
         {
-            var character = _dbContext.Characters
-                .Include(c => c.Statistics)
-                .FirstOrDefault(c => c.id == id && c.UserId == userId);
+            var character = _repo.GetById(id, userId);
 
             if (character is null)
                 throw new NotFoundException("Character not found");
@@ -258,28 +190,5 @@ namespace AIO_API.Services
             _dbContext.SaveChanges();
         }
 
-        //Validation helper
-        private void ValidateStatistics(List<CreateCharacterStatisticDto> stats)
-        {
-            if (stats.Count != 2)
-                throw new BadRequestException("Character must have exactly 2 statistics (Base & Current)");
-
-            if (!stats.Any(s => s.StatisticType == StatisticType.Base))
-                throw new BadRequestException("Missing Basic statistics");
-
-            if (!stats.Any(s => s.StatisticType == StatisticType.Current))
-                throw new BadRequestException("Missing Current statistics");
-
-            var basic = stats.First(s => s.StatisticType == StatisticType.Base);
-            var current = stats.First(s => s.StatisticType == StatisticType.Current);
-
-            // Soft rule: Current >= Basic
-            if (current.Strength < basic.Strength ||
-                current.Agility < basic.Agility ||
-                current.Toughness < basic.Toughness)
-            {
-                throw new BadRequestException("Current statistics cannot be lower than Basic");
-            }
-        }
     }
 }

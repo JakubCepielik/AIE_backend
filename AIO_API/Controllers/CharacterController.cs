@@ -36,7 +36,7 @@ namespace AIO_API.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete([FromRoute]int id)
         {
-            _characterService.Delete(id);
+            _characterService.Delete(id, UserId);
             return NoContent();
         }
 
@@ -59,7 +59,7 @@ namespace AIO_API.Controllers
        [HttpGet("{id}")]
         public ActionResult<CharacterDto> Get([FromRoute] int id)
         {
-            var CharacterByIdDto = _characterService.GetById(id);
+            var CharacterByIdDto = _characterService.GetById(id, UserId);
             return Ok(CharacterByIdDto);
         }
 
@@ -68,7 +68,7 @@ namespace AIO_API.Controllers
         [HttpPost("{id}/skills")]
         public ActionResult AddSkill(int id, [FromBody] AddCharacterSkillDto dto)
         {
-            _characterService.AddSkill(id, dto);
+            _characterService.AddSkill(id,UserId, dto);
             return Ok();
         }
 
@@ -82,7 +82,7 @@ namespace AIO_API.Controllers
         [HttpDelete("{id}/skills")]
         public ActionResult DeleteSkill(int id, [FromBody] DeleteCharacterSkillDto dto)
         {
-            _characterService.DeleteSkill(id, dto);
+            _characterService.DeleteSkill(id,UserId, dto);
             return Ok();
         }
 
@@ -91,7 +91,7 @@ namespace AIO_API.Controllers
         [HttpPost("{id}/abilities")]
         public ActionResult AddAbility(int id, [FromBody] AddCharacterAbilityDto dto)
         {
-            _characterService.AddAbility(id, dto);
+            _characterService.AddAbility(id,UserId, dto);
             return Ok();
         }
 
@@ -105,7 +105,7 @@ namespace AIO_API.Controllers
         [HttpDelete("{id}/abilities")]
         public ActionResult DeleteAbility(int id, [FromBody] DeleteCharacterAbilityDto dto)
         {
-            _characterService.DeleteAbility(id, dto);
+            _characterService.DeleteAbility(id, UserId, dto);
             return Ok();
         }
 

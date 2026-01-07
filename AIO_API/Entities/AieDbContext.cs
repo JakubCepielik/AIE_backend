@@ -1,5 +1,8 @@
 using AIO_API.Entities.Campaigns;
 using AIO_API.Entities.Characters;
+using AIO_API.Entities.Characters.Abilities;
+using AIO_API.Entities.Characters.Skills;
+using AIO_API.Entities.Characters.Statistics;
 using AIO_API.Entities.Items;
 using AIO_API.Entities.Users;
 

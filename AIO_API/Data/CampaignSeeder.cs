@@ -26,6 +26,9 @@ namespace AIO_API.Data
 
         private IEnumerable<Campaign> GetCampaigns()
         {
+            var admin = _dbContext.Users
+                .First(u => u.Username == "admin");
+
             var campaigns = new List<Campaign>()
             {
                 new Campaign()
@@ -33,7 +36,7 @@ namespace AIO_API.Data
                     Name = "1000 Tronów",
                     Description = "Kampania seedowana",
                     CreateDate = DateTime.Now,
-                    UserId = 1
+                    UserId = admin.Id
                 }
             };
 

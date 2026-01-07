@@ -1,4 +1,4 @@
-﻿using AIO_API.Entities.Characters;
+﻿using AIO_API.Entities.Characters.Statistics;
 using System.ComponentModel.DataAnnotations;
 
 namespace AIO_API.Models.CharacterDto.Statistic

@@ -32,13 +32,15 @@ namespace AIO_API.Data
 
         private IEnumerable<User> GetUsers()
         {
+            var role = _dbContext.Roles
+                            .First(r => r.Name == "Admin");
             var admin = new User
             {
                 Email = "admin@aie.com",
                 FirstName = "Admin",
                 LastName = "Systemowy",
                 Username = "admin",
-                RoleId = 3
+                RoleId = role.Id
             };
 
             admin.PasswordHash = _passwordHasher.HashPassword(admin, "admin");

@@ -6,6 +6,7 @@ using AIO_API.Interfaces;
 using AIO_API.Middleware;
 using AIO_API.Models.UserDTO;
 using AIO_API.Models.Validators;
+using AIO_API.Repositories;
 using AIO_API.Services;
 using AutoMapper;
 using FluentValidation;
@@ -97,6 +98,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
 builder.Services.AddScoped<IValidator<ChangePasswordDto>, ChangePasswordDtoValidator>();
+builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
 //builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
 
 // ---------- SWAGGER ----------

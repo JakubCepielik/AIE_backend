@@ -6,5 +6,9 @@ namespace AIO_API.Interfaces
     public interface IItemService
     {
         public IEnumerable<ItemDto> GetAll();
+        public ItemDto GetById(int id);
+        public int Create(CreateItemDto dto);
+        public void Update(int id, UpdateItemDto itemDto);
+
     }
 }

@@ -26,6 +26,11 @@ namespace AIO_API.Middleware
                 context.Response.StatusCode = 404;
                 await context.Response.WriteAsync(notFoundException.Message);
             }
+            catch (DomainException domainException)
+            {
+                context.Response.StatusCode = 400; // Bad Request
+                await context.Response.WriteAsync(domainException.Message);
+            }
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);

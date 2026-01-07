@@ -1,4 +1,4 @@
-﻿namespace AIO_API.Entities.Characters
+﻿namespace AIO_API.Entities.Characters.Abilities
 {
     public class Ability
     {

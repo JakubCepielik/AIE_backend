@@ -1,5 +1,5 @@
 ﻿using AIO_API.Entities;
-using AIO_API.Entities.Characters;
+using AIO_API.Entities.Characters.Statistics;
 
 namespace AIO_API.Data
 {
@@ -21,9 +21,14 @@ namespace AIO_API.Data
 
             var statistics = new List<Statistic>();
 
+            var aldred = _dbContext.Characters
+                            .First(u => u.Name == "Aldred");
+            var meliret = _dbContext.Characters
+                            .First(u => u.Name == "Meliret");
+
             // CharacterId: 6 i 7
-            statistics.AddRange(CreateStatisticsForCharacter(6));
-            statistics.AddRange(CreateStatisticsForCharacter(7));
+            statistics.AddRange(CreateStatisticsForCharacter(aldred.id));
+            statistics.AddRange(CreateStatisticsForCharacter(meliret.id));
 
             _dbContext.Statistics.AddRange(statistics);
             _dbContext.SaveChanges();
