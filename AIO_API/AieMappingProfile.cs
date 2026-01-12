@@ -105,5 +105,6 @@ public class AieMappingProfile : Profile
         CreateMap<Campaign, CampaignDto>();
         CreateMap<Campaign, CampaignByIdDto>();
         CreateMap<CreateCampaignDto, Campaign>();
+        CreateMap<UpdateCampaignDto, Campaign>();
     }
 }

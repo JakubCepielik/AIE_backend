@@ -18,7 +18,5 @@ namespace AIO_API.Interfaces
         public void AddAbility(int id, int userId, AddCharacterAbilityDto dto);
         public void DeleteAbility(int id, int userId, DeleteCharacterAbilityDto dto);
         public void UpdateStatistic(int id, int userId, UpdateStatisticDto dto);
-        public IEnumerable<SkillDto> GetSkills();
-        public IEnumerable<AbilityDto> GetAbilities();
     }
 }

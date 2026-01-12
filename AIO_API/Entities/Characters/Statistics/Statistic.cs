@@ -20,5 +20,22 @@
         public StatisticType StatisticType { get; set; }
         public int CharacterId { get; set; }
         public Character Character { get; set; }
+
+        public void Update(Statistic statisticToUpdate)
+        {
+            BallisticSkill = statisticToUpdate.BallisticSkill;
+            Strength = statisticToUpdate.Strength;
+            Toughness = statisticToUpdate.Toughness;
+            Agility = statisticToUpdate.Agility;
+            Intelligence = statisticToUpdate.Intelligence;
+            WillPower = statisticToUpdate.WillPower;
+            Fellowship = statisticToUpdate.Fellowship;
+            Attacks = statisticToUpdate.Attacks;
+            Wounds = statisticToUpdate.Wounds;
+            Movement = statisticToUpdate.Movement;
+            Magic = statisticToUpdate.Magic;
+            InsanityPoints = statisticToUpdate.InsanityPoints;
+            FatePoints = statisticToUpdate.FatePoints;
+        }
     }
 }

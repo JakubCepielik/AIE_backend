@@ -1,4 +1,5 @@
 ﻿using AIO_API.Entities.Characters.Skills;
+using AIO_API.Entities.Characters.Statistics;
 
 namespace AIO_API.Interfaces
 {
@@ -13,7 +14,8 @@ namespace AIO_API.Interfaces
         public void AddSkill(int skillId);
         public void DeleteSkill(int skillId);
         public void AddAbility(int skillId);
-
+        public void DeleteAbility(int skillId);
+        public void UpdateStatistic(Statistic statistic);
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using AIO_API.Entities;
 using AIO_API.Entities.Characters;
-using AIO_API.Interfaces;
+using AIO_API.Exceptions;
+using AIO_API.Interfaces.Repo;
 using AIO_API.Models.CharacterDto;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +33,7 @@ namespace AIO_API.Repositories
 
         public Character GetById(int id, int userId)
         {
-            return _dbContext.Characters
+            var character =  _dbContext.Characters
                 .Include(c => c.CharacterSkills)
                 .ThenInclude(cs => cs.Skill)
                 .Include(c => c.CharacterAbilities)
@@ -42,11 +43,15 @@ namespace AIO_API.Repositories
                 .Include(c => c.Statistics)
                 .Where(u => u.UserId == userId)
                 .FirstOrDefault(c => c.id == id);
+            if (character == null)
+                throw new NotFoundException("Character not found");
+            return character;
         }
+
 
         public IEnumerable<Character> GetAllForUser(int userId)
         {
-            return _dbContext.Characters
+            var characters = _dbContext.Characters
                 .Include(c => c.CharacterSkills)
                 .ThenInclude(cs => cs.Skill)
                 .Include(c => c.CharacterAbilities)
@@ -56,6 +61,10 @@ namespace AIO_API.Repositories
                 .Include(c => c.Statistics)
                 .Where(u => u.UserId == userId)
                 .ToList();
+            if (characters == null)
+                throw new NotFoundException("Character not found");
+            return characters;
+
         }
 
         public void SaveChanges()

@@ -1,7 +1,7 @@
 ﻿using AIO_API.Entities.Characters;
 using AIO_API.Models.CharacterDto;
 
-namespace AIO_API.Interfaces
+namespace AIO_API.Interfaces.Repo
 {
     public interface ICharacterRepository
     {
@@ -11,5 +11,6 @@ namespace AIO_API.Interfaces
         IEnumerable<Character> GetAllForUser(int userId);
         void SaveChanges();
         void Update(Character character, UpdateCharacterDto dto);
+
     }
 }

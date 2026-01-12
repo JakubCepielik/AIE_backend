@@ -72,12 +72,6 @@ namespace AIO_API.Controllers
             return Ok();
         }
 
-        [HttpGet("skills")]
-        public ActionResult<IEnumerable<SkillDto>> GetSkills()
-        {
-            var skills = _characterService.GetSkills();
-            return Ok(skills);
-        }
 
         [HttpDelete("{id}/skills")]
         public ActionResult DeleteSkill(int id, [FromBody] DeleteCharacterSkillDto dto)
@@ -95,12 +89,6 @@ namespace AIO_API.Controllers
             return Ok();
         }
 
-        [HttpGet("abilities")]
-        public ActionResult<IEnumerable<SkillDto>> GetAbilities()
-        {
-            var abilities = _characterService.GetAbilities();
-            return Ok(abilities);
-        }
 
         [HttpDelete("{id}/abilities")]
         public ActionResult DeleteAbility(int id, [FromBody] DeleteCharacterAbilityDto dto)

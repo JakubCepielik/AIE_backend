@@ -1,6 +1,8 @@
 ﻿using AIO_API.Entities.Campaigns;
+using AIO_API.Entities.Users;
 using AIO_API.Interfaces;
 using AIO_API.Models.CampaignDto;
+using AIO_API.Models.CharacterDto;
 using AIO_API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -57,8 +59,23 @@ namespace AIO_API.Controllers
         public ActionResult DeleteCampaign([FromRoute] int id)
         {
 
-            _campaignService.DeleteCampaign(UserId, id);
+            _campaignService.DeleteCampaign(id, UserId);
             return NoContent();
+        }
+
+        [HttpGet("{id}/playable-characters")]
+        public ActionResult<IEnumerable<CharacterDto>> GetPlayableCharactersInCampaign([FromRoute] int id)
+        {
+            var characters = _campaignService.GetPlayableCharactersInCampaign(id, UserId);
+            return Ok(characters);
+        }
+
+
+        [HttpGet("{id}/npc-characters")]
+        public ActionResult<IEnumerable<CharacterDto>> GetNpcCharactersInCampaign([FromRoute] int id)
+        {
+            var characters = _campaignService.GetNpcCharactersInCampaign(id, UserId);
+            return Ok(characters);
         }
 
     }

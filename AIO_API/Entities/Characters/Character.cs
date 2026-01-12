@@ -74,17 +74,18 @@ namespace AIO_API.Entities.Characters
             });
         }
 
-        //public void UpdateStatistic(UpdateStatisticDto dto)
-        //{
-        //    var statistic = Statistics
-        //        .FirstOrDefault(s => s.StatisticType == dto.StatisticType);
+        public void UpdateStatistic(Statistic statisticToUpdate)
+        {
+            var statistic = Statistics
+                .Where(s => s.CharacterId == this.id)
+                .FirstOrDefault(s => s.StatisticType == statisticToUpdate.StatisticType);
 
-        //    if (statistic is null)
-        //        throw new DomainException(
-        //            $"Statistic type '{dto.StatisticType}' not found for this character");
+            if (statistic is null)
+                throw new DomainException(
+                    $"Statistic type '{statisticToUpdate.StatisticType}' not found for this character");
 
-        //    statistic.UpdateFrom(dto);
-        //}
+            statistic.Update(statisticToUpdate);
+        }
 
         public void DeleteAbility(int abilityId)
         {

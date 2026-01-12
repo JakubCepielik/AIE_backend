@@ -3,6 +3,7 @@ using AIO_API.Data;
 using AIO_API.Entities;
 using AIO_API.Entities.Users;
 using AIO_API.Interfaces;
+using AIO_API.Interfaces.Repo;
 using AIO_API.Middleware;
 using AIO_API.Models.UserDTO;
 using AIO_API.Models.Validators;
@@ -100,6 +101,11 @@ builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator
 builder.Services.AddScoped<IValidator<ChangePasswordDto>, ChangePasswordDtoValidator>();
 builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
 //builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserDtoValidator>();
+builder.Services.AddScoped<ISkillRepository, SkillRepository>();
+builder.Services.AddScoped<ISkillService, SkillService>();
+builder.Services.AddScoped<IAbilityRepository, AbilityRepository>();
+builder.Services.AddScoped<IAbilityService, AbilityService>();
+builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
 
 // ---------- SWAGGER ----------
 builder.Services.AddEndpointsApiExplorer();

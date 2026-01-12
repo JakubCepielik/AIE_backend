@@ -3,6 +3,7 @@ using AIO_API.Entities.Campaigns;
 using AIO_API.Entities.Characters;
 using AIO_API.Exceptions;
 using AIO_API.Interfaces;
+using AIO_API.Interfaces.Repo;
 using AIO_API.Models.CampaignDto;
 using AIO_API.Models.CharacterDto;
 using AutoMapper;
@@ -13,82 +14,72 @@ namespace AIO_API.Services
     
     public class CampaignService : ICampaignService
     {
-        private readonly AieDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<CharacterService> _logger;
-        public CampaignService(AieDbContext dbContext, IMapper mapper, ILogger<CharacterService> logger)
+        private readonly ICampaignRepository _repo;
+        public CampaignService( IMapper mapper, ILogger<CharacterService> logger, ICampaignRepository repo)
         {
-            _dbContext = dbContext;
             _mapper = mapper;
             _logger = logger;
+            _repo = repo;
         }
 
         public CampaignByIdDto GetById(int id, int userId)
         {
-            var CampaignById = _dbContext
-                            .Campaigns
-                            .Include(ci => ci.PlayableCharacters)
-                            .Where(pc => pc.UserId == userId)
-                            .FirstOrDefault(p => p.Id == id);
-
-            if (CampaignById == null)
-                throw new NotFoundException("Campaign not found");
-
-            var result = _mapper.Map<CampaignByIdDto>(CampaignById);
-
-            return result;
+            var campaignById = _repo.GetCampaignById(id, userId);
+            var campaignDto = _mapper.Map<CampaignByIdDto>(campaignById);
+            return campaignDto;
         }
 
         public IEnumerable<CampaignDto> GetAll(int userId)
         {
-            var allCampaigns = _dbContext.
-                                   Campaigns.
-                                   Where(pc => pc.UserId == userId).
-                                   ToList();
-
+            var allCampaigns = _repo.GetAllCampaigns(userId);
             var allCampaignsDto = _mapper.Map<List<CampaignDto>>(allCampaigns);
-
             return allCampaignsDto;
         }
 
-        public void UpdateCampaign(int campaignId, int userId, UpdateCampaignDto dto)
+        public void UpdateCampaign(int id, int userId, UpdateCampaignDto dto)
         {
-            var updatedCampaign = _dbContext.
-                                   Campaigns.
-                                   Where(pc => pc.UserId == userId).
-                                   FirstOrDefault(c => c.Id == campaignId);
+            var updatedCampaign = _repo.GetCampaignById(id, userId);
 
-            if (updatedCampaign == null)
-                throw new NotFoundException("Campaign not found");
+            var mappedCampaign = _mapper.Map< Campaign>(dto);
 
-            updatedCampaign.Name = dto.Name;
-            updatedCampaign.Description = dto.Description;
+            updatedCampaign.Update(mappedCampaign);
 
-            _dbContext.SaveChanges();
+            _repo.SaveChanges();
         }
         public Campaign CreateCampaign(int userId, CreateCampaignDto dto)
         {
-            var campaign = _mapper.Map<Campaign>(dto);
-            campaign.CreateDate = DateTime.Now;
-            campaign.UserId = userId;
-            _dbContext.Campaigns.Add(campaign);
-            _dbContext.SaveChanges();
+            if (dto == null)
+                throw new BadRequestException("Campaign data is required");
+
+            var campaign = Campaign.Create(
+                dto.Name,
+                dto.Description,
+                userId
+            );
+            _repo.CreateCampaign(campaign);
+            _repo.SaveChanges();
 
             return campaign;
         }
 
-        public void DeleteCampaign(int userId, int campaignId)
+        public void DeleteCampaign(int id, int userId)
         {
-            var deletedCampaign = _dbContext.
-                                   Campaigns.
-                                   Where(pc => pc.UserId == userId).
-                                   FirstOrDefault(c => c.Id == campaignId);
+            _repo.DeleteCampaign(id, userId);
+            _repo.SaveChanges();
+        }
 
-            if (deletedCampaign == null)
-                throw new NotFoundException("Campaign not found");
+        public IEnumerable<CharacterDto> GetPlayableCharactersInCampaign(int id, int userId)
+        {
+            var playableCharacters = _repo.GetPlayableCharactersInCampaign(id, userId);
+            return _mapper.Map<List<CharacterDto>>(playableCharacters);
+        }
 
-            _dbContext.Remove(deletedCampaign);
-            _dbContext.SaveChanges();
+        public IEnumerable<CharacterDto> GetNpcCharactersInCampaign(int id, int userId)
+        {
+            var npcCharacters = _repo.GetNpcCharactersInCampaign(id, userId);
+            return _mapper.Map<List<CharacterDto>>(npcCharacters);
         }
 
     }

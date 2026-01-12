@@ -1,5 +1,6 @@
 ﻿using AIO_API.Entities.Characters;
 using AIO_API.Entities.Users;
+using AIO_API.Exceptions;
 
 namespace AIO_API.Entities.Campaigns
 {
@@ -12,6 +13,31 @@ namespace AIO_API.Entities.Campaigns
         public int UserId { get; set; }
         public User User { get; set; }
 
-        public ICollection<PlayableCharacter> PlayableCharacters { get; set; }
+        public ICollection<Character> Characters { get; set; }
+
+
+        public void Update(Campaign campaign)
+        {
+            if (campaign == null)
+                throw new ArgumentNullException(nameof(campaign));
+
+            Name = campaign.Name;
+            Description = campaign.Description;
+        }
+
+        public static Campaign Create(string name, string description, int userId)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new DomainException("Campaign name is required");
+
+            return new Campaign
+            {
+                Name = name.Trim(),
+                Description = description,
+                UserId = userId,
+                CreateDate = DateTime.UtcNow,
+                Characters = new List<Character>()
+            };
+        }
     }
 }
