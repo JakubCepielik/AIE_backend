@@ -22,6 +22,34 @@ namespace AIO_API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AIO_API.Entities.CampaignSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.ToTable("CampaignSessions");
+                });
+
             modelBuilder.Entity("AIO_API.Entities.Campaigns.Campaign", b =>
                 {
                     b.Property<int>("Id")
@@ -51,7 +79,7 @@ namespace AIO_API.Migrations
                     b.ToTable("Campaigns");
                 });
 
-            modelBuilder.Entity("AIO_API.Entities.Characters.Ability", b =>
+            modelBuilder.Entity("AIO_API.Entities.Characters.Abilities.Ability", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -70,6 +98,30 @@ namespace AIO_API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Abilities");
+                });
+
+            modelBuilder.Entity("AIO_API.Entities.Characters.Abilities.CharacterAbility", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AbilityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AbilityId");
+
+                    b.HasIndex("CharacterId", "AbilityId")
+                        .IsUnique();
+
+                    b.ToTable("CharacterAbilities");
                 });
 
             modelBuilder.Entity("AIO_API.Entities.Characters.Character", b =>
@@ -111,6 +163,8 @@ namespace AIO_API.Migrations
 
                     b.HasKey("id");
 
+                    b.HasIndex("CampaignId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Characters");
@@ -118,30 +172,6 @@ namespace AIO_API.Migrations
                     b.HasDiscriminator<string>("CharacterType").HasValue("Character");
 
                     b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("AIO_API.Entities.Characters.CharacterAbility", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AbilityId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AbilityId");
-
-                    b.HasIndex("CharacterId", "AbilityId")
-                        .IsUnique();
-
-                    b.ToTable("CharacterAbilities");
                 });
 
             modelBuilder.Entity("AIO_API.Entities.Characters.CharacterItem", b =>
@@ -162,7 +192,7 @@ namespace AIO_API.Migrations
                     b.ToTable("CharacterItems");
                 });
 
-            modelBuilder.Entity("AIO_API.Entities.Characters.CharacterSkill", b =>
+            modelBuilder.Entity("AIO_API.Entities.Characters.Skills.CharacterSkill", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -186,7 +216,7 @@ namespace AIO_API.Migrations
                     b.ToTable("CharacterSkills");
                 });
 
-            modelBuilder.Entity("AIO_API.Entities.Characters.Skill", b =>
+            modelBuilder.Entity("AIO_API.Entities.Characters.Skills.Skill", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -215,7 +245,7 @@ namespace AIO_API.Migrations
                     b.ToTable("Skills");
                 });
 
-            modelBuilder.Entity("AIO_API.Entities.Characters.Statistic", b =>
+            modelBuilder.Entity("AIO_API.Entities.Characters.Statistics.Statistic", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -365,8 +395,6 @@ namespace AIO_API.Migrations
                 {
                     b.HasBaseType("AIO_API.Entities.Characters.Character");
 
-                    b.HasIndex("CampaignId");
-
                     b.HasDiscriminator().HasValue("Npc");
                 });
 
@@ -374,9 +402,18 @@ namespace AIO_API.Migrations
                 {
                     b.HasBaseType("AIO_API.Entities.Characters.Character");
 
-                    b.HasIndex("CampaignId");
-
                     b.HasDiscriminator().HasValue("Playable");
+                });
+
+            modelBuilder.Entity("AIO_API.Entities.CampaignSession", b =>
+                {
+                    b.HasOne("AIO_API.Entities.Campaigns.Campaign", "Campaign")
+                        .WithMany("CampaignSessions")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
                 });
 
             modelBuilder.Entity("AIO_API.Entities.Campaigns.Campaign", b =>
@@ -390,20 +427,9 @@ namespace AIO_API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("AIO_API.Entities.Characters.Character", b =>
+            modelBuilder.Entity("AIO_API.Entities.Characters.Abilities.CharacterAbility", b =>
                 {
-                    b.HasOne("AIO_API.Entities.Users.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("AIO_API.Entities.Characters.CharacterAbility", b =>
-                {
-                    b.HasOne("AIO_API.Entities.Characters.Ability", "Ability")
+                    b.HasOne("AIO_API.Entities.Characters.Abilities.Ability", "Ability")
                         .WithMany("CharacterAbilities")
                         .HasForeignKey("AbilityId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -418,6 +444,25 @@ namespace AIO_API.Migrations
                     b.Navigation("Ability");
 
                     b.Navigation("Character");
+                });
+
+            modelBuilder.Entity("AIO_API.Entities.Characters.Character", b =>
+                {
+                    b.HasOne("AIO_API.Entities.Campaigns.Campaign", "Campaign")
+                        .WithMany("Characters")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AIO_API.Entities.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AIO_API.Entities.Characters.CharacterItem", b =>
@@ -439,7 +484,7 @@ namespace AIO_API.Migrations
                     b.Navigation("Item");
                 });
 
-            modelBuilder.Entity("AIO_API.Entities.Characters.CharacterSkill", b =>
+            modelBuilder.Entity("AIO_API.Entities.Characters.Skills.CharacterSkill", b =>
                 {
                     b.HasOne("AIO_API.Entities.Characters.Character", "Character")
                         .WithMany("CharacterSkills")
@@ -447,7 +492,7 @@ namespace AIO_API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AIO_API.Entities.Characters.Skill", "Skill")
+                    b.HasOne("AIO_API.Entities.Characters.Skills.Skill", "Skill")
                         .WithMany("CharacterSkills")
                         .HasForeignKey("SkillId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -458,7 +503,7 @@ namespace AIO_API.Migrations
                     b.Navigation("Skill");
                 });
 
-            modelBuilder.Entity("AIO_API.Entities.Characters.Statistic", b =>
+            modelBuilder.Entity("AIO_API.Entities.Characters.Statistics.Statistic", b =>
                 {
                     b.HasOne("AIO_API.Entities.Characters.Character", "Character")
                         .WithMany("Statistics")
@@ -480,34 +525,14 @@ namespace AIO_API.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("AIO_API.Entities.Characters.NpcCharacter", b =>
-                {
-                    b.HasOne("AIO_API.Entities.Campaigns.Campaign", "Campaign")
-                        .WithMany()
-                        .HasForeignKey("CampaignId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Campaign");
-                });
-
-            modelBuilder.Entity("AIO_API.Entities.Characters.PlayableCharacter", b =>
-                {
-                    b.HasOne("AIO_API.Entities.Campaigns.Campaign", "Campaign")
-                        .WithMany("PlayableCharacters")
-                        .HasForeignKey("CampaignId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Campaign");
-                });
-
             modelBuilder.Entity("AIO_API.Entities.Campaigns.Campaign", b =>
                 {
-                    b.Navigation("PlayableCharacters");
+                    b.Navigation("CampaignSessions");
+
+                    b.Navigation("Characters");
                 });
 
-            modelBuilder.Entity("AIO_API.Entities.Characters.Ability", b =>
+            modelBuilder.Entity("AIO_API.Entities.Characters.Abilities.Ability", b =>
                 {
                     b.Navigation("CharacterAbilities");
                 });
@@ -523,7 +548,7 @@ namespace AIO_API.Migrations
                     b.Navigation("Statistics");
                 });
 
-            modelBuilder.Entity("AIO_API.Entities.Characters.Skill", b =>
+            modelBuilder.Entity("AIO_API.Entities.Characters.Skills.Skill", b =>
                 {
                     b.Navigation("CharacterSkills");
                 });
